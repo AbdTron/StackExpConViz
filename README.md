@@ -28,6 +28,16 @@
 3. Click **Start Conversion** for step-by-step guidance, or **Auto Convert** for automatic conversion.
 4. Observe the visualized stack operations and the final result.
 
+## Pictures
+
+![2](https://github.com/user-attachments/assets/3d88ee23-ce3e-4983-9234-7c6e3f9549e0)
+
+![3](https://github.com/user-attachments/assets/817f8216-a8c4-4a26-9277-7960a867d780)
+
+![4](https://github.com/user-attachments/assets/c8958f1e-797b-46e7-aeac-fe483b8c3031)
+
+
+
 ## Requirements
 - Java Development Kit (JDK) 8 or higher
 
