@@ -100,7 +100,8 @@ public class StackExpConViz extends JFrame {
                 "Postfix to Infix",
                 "Infix to Prefix",
                 "Infix to Postfix",
-                "String Reversal"  // Added new mode
+                "String Reversal",  // Added new mode
+                "Bracket Balancing"  // Added new mode
         };
         conversionModeCombo = new JComboBox<>(modes);
         conversionModeCombo.addActionListener(e -> {
@@ -695,6 +696,23 @@ public class StackExpConViz extends JFrame {
             return;
         }
 
+        // Handle bracket balancing mode
+        if (conversionModeCombo.getSelectedIndex() == 7) {
+            // For bracket balancing, each character is a token
+            tokens = new String[input.length()];
+            for (int i = 0; i < input.length(); i++) {
+                tokens[i] = String.valueOf(input.charAt(i));
+            }
+            currentTokenIndex = 0;
+            isPostfixInput = true; // We'll process from left to right
+            expressionArrowPanel.setVisible(true);
+            updateExpressionAndArrow();
+            nextStepButton.setEnabled(true);
+            autoConvertButton.setEnabled(true);
+            expressionLabel.setText("Ready to check bracket balance. Click 'Next Step' or 'Auto Convert'");
+            return;
+        }
+
         // Handle string reversal mode
         if (conversionModeCombo.getSelectedIndex() == 6) {
             // For string reversal, each character is a token
@@ -810,6 +828,63 @@ public class StackExpConViz extends JFrame {
 
     // Process the next token in the expression
     private void processNextStep() {
+        // Handle bracket balancing mode
+        if (conversionModeCombo.getSelectedIndex() == 7) {
+            if (currentTokenIndex >= tokens.length) {
+                // All characters processed, check if stack is empty
+                if (stack.isEmpty()) {
+                    showMessage("Expression has balanced brackets!");
+                    resultLabel.setText("Final Result: Expression is balanced");
+                    disableControls();
+                    return;
+                } else {
+                    showMessage("Expression has unbalanced brackets!");
+                    resultLabel.setText("Final Result: Expression is unbalanced");
+                    disableControls();
+                    return;
+                }
+            }
+
+            String token = tokens[currentTokenIndex];
+            expressionLabel.setText("Processing character: " + token);
+
+            if (isOpenBracket(token)) {
+                // Push opening bracket to stack
+                stack.add(token);
+                updateStackVisual();
+                addNotification("Pushed opening bracket: " + token);
+                topLabel.setText("Top of Stack: " + token);
+                currentTokenIndex++;
+                updateExpressionAndArrow();
+                return;
+            } else if (isCloseBracket(token)) {
+                if (stack.isEmpty()) {
+                    showMessage("Unbalanced: Extra closing bracket '" + token + "'");
+                    resultLabel.setText("Final Result: Expression is unbalanced");
+                    disableControls();
+                    return;
+                }
+
+                String topBracket = stack.get(stack.size() - 1);
+                if ((token.equals(")") && topBracket.equals("(")) ||
+                        (token.equals("]") && topBracket.equals("[")) ||
+                        (token.equals("}") && topBracket.equals("{"))) {
+                    // Matching brackets found - animate the matching process
+                    animateBracketMatching(topBracket, token);
+                    return;
+                } else {
+                    showMessage("Unbalanced: Mismatched brackets '" + topBracket + "' and '" + token + "'");
+                    resultLabel.setText("Final Result: Expression is unbalanced");
+                    disableControls();
+                    return;
+                }
+            }
+
+            currentTokenIndex++;
+            updateExpressionAndArrow();
+            return;
+        }
+
         // Handle string reversal mode
         if (conversionModeCombo.getSelectedIndex() == 6) {
             if (currentTokenIndex >= tokens.length) {
@@ -1243,6 +1318,9 @@ public class StackExpConViz extends JFrame {
             case 6:
                 title = "String Reversal Visualizer";
                 break;
+            case 7:
+                title = "Bracket Balancing Visualizer";
+                break;
         }
         setTitle(title);
     }
@@ -1302,6 +1380,122 @@ public class StackExpConViz extends JFrame {
         notificationContent.append("<br>----------------------------------------<br><br>");
         notificationArea.setText(notificationContent.toString() + "</body></html>");
         notificationArea.setCaretPosition(notificationArea.getDocument().getLength());
+    }
+
+    // New method to animate bracket matching
+    private void animateBracketMatching(String openBracket, String closeBracket) {
+        isAnimating = true;
+        nextStepButton.setEnabled(false);
+        autoConvertButton.setEnabled(false);
+        messageLabel.setText("");
+
+        // Create a Glass Pane for animation
+        JPanel glassPane = new JPanel(null);
+        glassPane.setOpaque(false);
+        setGlassPane(glassPane);
+        glassPane.setVisible(true);
+
+        // Calculate positions
+        Point stackLocation = stackPanel.getLocationOnScreen();
+        SwingUtilities.convertPointFromScreen(stackLocation, glassPane);
+        Point stackPos = new Point(stackLocation.x + 100, stackLocation.y + 10); // Moved right by 50 pixels
+        Point comparePos = new Point(stackPos.x + 300, stackPos.y); // Increased distance for comparison
+
+        // Create labels for both brackets at the start
+        JLabel openLabel = new JLabel(openBracket, SwingConstants.CENTER);
+        JLabel closeLabel = new JLabel(closeBracket, SwingConstants.CENTER);
+
+        // Style both labels
+        for (JLabel label : new JLabel[]{openLabel, closeLabel}) {
+            label.setFont(new Font("Arial", Font.BOLD, 18));
+            label.setForeground(Color.WHITE);
+            label.setBackground(new Color(46, 139, 87));
+            label.setOpaque(true);
+            label.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
+            label.setSize(350, 50); // Match stack element size
+        }
+
+        // Position initial labels
+        closeLabel.setLocation(stackPos.x, stackPos.y - 50); // Start above stack
+        openLabel.setLocation(stackPos.x, stackPos.y); // Start at stack position
+        openLabel.setVisible(false); // Hide initially
+
+        glassPane.add(openLabel);
+        glassPane.add(closeLabel);
+
+        // Animation sequence
+        Timer[] sequence = new Timer[1];
+        int[] step = {0};
+
+        sequence[0] = new Timer(100, e -> {
+            step[0]++;
+
+            // Phase 1: Push closing bracket to stack (steps 1-20)
+            if (step[0] <= 20) {
+                float progress = step[0] / 20.0f;
+                int y = (int)(stackPos.y - 50 + progress * 50);
+                closeLabel.setLocation(stackPos.x, y);
+
+                if (step[0] == 20) {
+                    // Actually add to stack
+                    stack.add(closeBracket);
+                    updateStackVisual();
+                    addNotification("Pushed closing bracket '" + closeBracket + "' to stack");
+                }
+            }
+            // Phase 2: Pop brackets and move to comparison (steps 21-40)
+            else if (step[0] == 21) {
+                // Make opening bracket visible
+                openLabel.setVisible(true);
+
+                // Remove from stack
+                stack.remove(stack.size() - 1); // Remove closing bracket
+                stack.remove(stack.size() - 1); // Remove opening bracket
+                updateStackVisual();
+                addNotification("Comparing brackets '" + openBracket + "' and '" + closeBracket + "'");
+            }
+            else if (step[0] > 21 && step[0] <= 40) {
+                float progress = (step[0] - 21) / 19.0f;
+                int x = (int)(stackPos.x + (comparePos.x - stackPos.x) * progress);
+
+                openLabel.setLocation(x, stackPos.y);
+                closeLabel.setLocation(x, stackPos.y + 60); // Increased vertical separation
+            }
+            // Phase 3: Show match animation (steps 41-60)
+            else if (step[0] == 41) {
+                addNotification("Brackets match!");
+                // Change color to indicate match
+                openLabel.setBackground(new Color(46, 139, 87));
+                closeLabel.setBackground(new Color(46, 139, 87));
+            }
+            // Phase 4: Fade out (steps 61-80)
+            else if (step[0] > 60 && step[0] <= 80) {
+                float progress = (step[0] - 60) / 20.0f;
+                int alpha = (int)(255 * (1 - progress));
+
+                openLabel.setBackground(new Color(46, 139, 87, alpha));
+                closeLabel.setBackground(new Color(46, 139, 87, alpha));
+
+                // Also fade the text
+                openLabel.setForeground(new Color(255, 255, 255, alpha));
+                closeLabel.setForeground(new Color(255, 255, 255, alpha));
+            }
+            // Cleanup
+            else if (step[0] > 80) {
+                sequence[0].stop();
+                glassPane.removeAll();
+                glassPane.setVisible(false);
+
+                isAnimating = false;
+                nextStepButton.setEnabled(true);
+                autoConvertButton.setEnabled(true);
+
+                currentTokenIndex++;
+                updateExpressionAndArrow();
+            }
+        });
+
+        sequence[0].start();
     }
 
     public static void main(String[] args) {
