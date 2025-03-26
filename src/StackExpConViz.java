@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Stack;
 import java.io.PrintStream;
 import java.io.OutputStream;
+import java.util.Collections;
 
 // This program shows how expressions are converted between prefix, infix, and postfix
 // I used Swing for the UI and tried to make it look as nice as possible
@@ -98,7 +99,8 @@ public class StackExpConViz extends JFrame {
                 "Postfix to Prefix",
                 "Postfix to Infix",
                 "Infix to Prefix",
-                "Infix to Postfix"
+                "Infix to Postfix",
+                "String Reversal"  // Added new mode
         };
         conversionModeCombo = new JComboBox<>(modes);
         conversionModeCombo.addActionListener(e -> {
@@ -106,7 +108,7 @@ public class StackExpConViz extends JFrame {
             // Update flags based on the selected conversion mode
             isInfixMode = selectedIndex == 1 || selectedIndex == 3; // Infix output
             isPostfixInput = selectedIndex == 2 || selectedIndex == 3; // Postfix input
-            isInfixInput = selectedIndex >= 4; // Infix input
+            isInfixInput = selectedIndex >= 4 && selectedIndex < 6; // Infix input
             updateTitle();
         });
 
@@ -693,6 +695,23 @@ public class StackExpConViz extends JFrame {
             return;
         }
 
+        // Handle string reversal mode
+        if (conversionModeCombo.getSelectedIndex() == 6) {
+            // For string reversal, each character is a token
+            tokens = new String[input.length()];
+            for (int i = 0; i < input.length(); i++) {
+                tokens[i] = String.valueOf(input.charAt(i));
+            }
+            currentTokenIndex = 0;
+            isPostfixInput = true; // We'll process from left to right
+            expressionArrowPanel.setVisible(true);
+            updateExpressionAndArrow();
+            nextStepButton.setEnabled(true);
+            autoConvertButton.setEnabled(true);
+            expressionLabel.setText("Ready to start string reversal. Click 'Next Step' or 'Auto Convert'");
+            return;
+        }
+
         // Split the input into tokens
         tokens = tokenizeExpression(input);
 
@@ -763,9 +782,16 @@ public class StackExpConViz extends JFrame {
                 currentExpressionLabel.setText("Remaining: " + expr.toString());
             } else {
                 // For prefix, show tokens from current to beginning
+                // We need to show them in the order they will be processed
+                ArrayList<String> remainingTokens = new ArrayList<>();
                 for (int i = currentTokenIndex; i >= 0; i--) {
-                    expr.append(tokens[i]);
-                    if (i > 0) expr.append(" ");
+                    remainingTokens.add(tokens[i]);
+                }
+                // Reverse the list to show in processing order
+                Collections.reverse(remainingTokens);
+                for (int i = 0; i < remainingTokens.size(); i++) {
+                    expr.append(remainingTokens.get(i));
+                    if (i < remainingTokens.size() - 1) expr.append(" ");
                 }
                 currentExpressionLabel.setText("Remaining: " + expr.toString());
             }
@@ -784,6 +810,51 @@ public class StackExpConViz extends JFrame {
 
     // Process the next token in the expression
     private void processNextStep() {
+        // Handle string reversal mode
+        if (conversionModeCombo.getSelectedIndex() == 6) {
+            if (currentTokenIndex >= tokens.length) {
+                // All characters processed, now pop them to get reversed string
+                if (stack.isEmpty()) {
+                    showMessage("String Reversal Complete!");
+                    disableControls();
+                    return;
+                }
+
+                // Pop the top character and show it being removed
+                String poppedChar = stack.remove(stack.size() - 1);
+                updateStackVisual();
+                addNotification("Popped character: " + poppedChar);
+
+                // Build the reversed string gradually
+                StringBuilder reversed = new StringBuilder();
+                // Get the current reversed string from the result label
+                String currentReversed = resultLabel.getText().replace("Reversed String: ", "");
+                if (currentReversed.isEmpty()) {
+                    reversed.append(poppedChar);
+                } else {
+                    reversed.append(currentReversed).append(poppedChar);
+                }
+                resultLabel.setText("Reversed String: " + reversed.toString());
+
+                // Print the current state of the reversed string to console
+                System.out.println("String Reversal: " + reversed.toString());
+                return;
+            }
+
+            String token = tokens[currentTokenIndex];
+            expressionLabel.setText("Processing character: " + token);
+
+            // Push each character to stack
+            stack.add(token);
+            updateStackVisual();
+            addNotification("Pushed character: " + token);
+            topLabel.setText("Top of Stack: " + token);
+
+            currentTokenIndex++;
+            updateExpressionAndArrow();
+            return;
+        }
+
         // Check if we've processed all tokens
         if (isPostfixInput && currentTokenIndex >= tokens.length ||
                 !isPostfixInput && currentTokenIndex < 0) {
@@ -1168,6 +1239,9 @@ public class StackExpConViz extends JFrame {
                 break;
             case 5:
                 title = "Infix to Postfix Converter Visualizer";
+                break;
+            case 6:
+                title = "String Reversal Visualizer";
                 break;
         }
         setTitle(title);
