@@ -10,9 +10,11 @@
   - **Postfix to Infix**
   - **Infix to Prefix**
   - **Infix to Postfix**
+  - **String Reversal**
 - Visual representation of stack operations for improved understanding.
 - Step-by-step conversion process with notifications explaining each action.
 - Auto-conversion feature for faster demonstration.
+- Reverse an inputed String using Stack on Console.
 
 ## Installation
 1. Clone the repository:
