@@ -11,10 +11,12 @@
   - **Infix to Prefix**
   - **Infix to Postfix**
   - **String Reversal**
+  - **Bracket Balancing**
 - Visual representation of stack operations for improved understanding.
 - Step-by-step conversion process with notifications explaining each action.
 - Auto-conversion feature for faster demonstration.
 - Reverse an inputed String using Stack on Console.
+- Check if the brackets in an expression are balanced or not.
 
 ## Installation
 1. Clone the repository:
@@ -32,7 +34,7 @@
 
 ## Pictures
 
-![122](https://github.com/user-attachments/assets/0f703ffc-816d-453e-9b6d-3b23122f918b)
+![122](https://github.com/user-attachments/assets/56af0e3b-9470-450e-9b6d-bfa4942c8e73)
 
 ![3](https://github.com/user-attachments/assets/817f8216-a8c4-4a26-9277-7960a867d780)
 
