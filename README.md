@@ -10,13 +10,17 @@
   - **Postfix to Infix**
   - **Infix to Prefix**
   - **Infix to Postfix**
-  - **String Reversal**
-  - **Bracket Balancing**
+- Additional functionalities:
+  - **String Reversal** using Stack in the console.
+  - **Bracket Balancing** to check expression validity.
+  - The expression input field actively validates syntax in real time.
+  - Expressions can be entered with or without spaces.
+  - A collection of example expressions is available for quick demonstrations.
+  - The **Info Tab** provides an explanation of the algorithms used for conversion.
 - Visual representation of stack operations for improved understanding.
 - Step-by-step conversion process with notifications explaining each action.
-- Auto-conversion feature for faster demonstration.
-- Reverse an inputed String using Stack on Console.
-- Check if the brackets in an expression are balanced or not.
+- **Auto-conversion feature** for faster demonstrations.
+- Auto conversion speed can be animated as desired.
 
 ## Installation
 1. Clone the repository:
@@ -31,15 +35,15 @@
 2. Select the desired conversion mode from the dropdown menu.
 3. Click **Start Conversion** for step-by-step guidance, or **Auto Convert** for automatic conversion.
 4. Observe the visualized stack operations and the final result.
+5. Use the String Reversal and Bracket Balancing tools from the additional features section.
 
 ## Pictures
 
-![122](https://github.com/user-attachments/assets/56af0e3b-9470-450e-9b6d-bfa4942c8e73)
+![1](https://github.com/user-attachments/assets/4527bc48-c1b3-44fc-9d0d-d8a00d757bda)
 
-![3](https://github.com/user-attachments/assets/817f8216-a8c4-4a26-9277-7960a867d780)
+![2](https://github.com/user-attachments/assets/65afd21a-503d-4bf4-bae4-8fb504b08236)
 
-![4](https://github.com/user-attachments/assets/c8958f1e-797b-46e7-aeac-fe483b8c3031)
-
+![3](https://github.com/user-attachments/assets/b3536658-7364-4be6-a4ff-98ef9ee41842)
 
 
 ## Requirements
